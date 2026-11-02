@@ -989,3 +989,10 @@ If you use this project in your research or publication, please cite:
 
 
 
+
+
+## Additional analysis and embedded-engineering tools
+
+A source-preserving Python companion from [`faizannazir/kicad-mcp-server`](https://github.com/faizannazir/kicad-mcp-server) is integrated under [`integrations/kicad-analysis-server/`](integrations/kicad-analysis-server/). It adds hierarchical schematic/net analysis, MCU pin-function and conflict analysis, device-tree generation, embedded hardware-test templates, verified parts-registry access, PCB parsing, and native KiCad CLI validation. See [`integrations/README.md`](integrations/README.md) for setup.
+
+The companion currently runs as a separate MCP process to keep its Python dependencies and tool registry isolated from the primary TypeScript server. Configure both MCP servers in your client to access both feature sets. Do not treat parser results or generated files as proof of electrical safety or manufacturing readiness; run KiCad ERC/DRC and review the design before fabrication.
