@@ -1,332 +1,143 @@
-# Installation Guide for KiCad MCP Server
+# Installation and MCP client setup
 
-## Prerequisites
+This is the Python analysis companion derived from [Seeed Studio's original KiCad MCP Server](https://github.com/Seeed-Studio/kicad-mcp-server). The primary TypeScript KiCad editing server in the parent repository is a separate process.
 
-### System Requirements
-- **Python**: 3.10 or higher
-- **KiCad**: 9.0 or higher (for file compatibility)
-- **Operating System**: Windows, macOS, or Linux
+## Requirements
 
-### KiCad Installation
+- Python 3.10 or newer.
+- KiCad 8 or newer; KiCad 9/10 is recommended.
+- `kicad-cli` available on PATH for ERC/DRC and export operations.
+- KiCad's `pcbnew` Python module for the full PCB API-backed analysis features. A normal system Python environment may not include it.
 
-**Linux:**
-```bash
-sudo apt install kicad  # Ubuntu/Debian
-sudo dnf install kicad  # Fedora
+## Install
+
+Run these commands from `integrations/kicad-analysis-server`.
+
+### Windows (PowerShell)
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+python -m kicad_mcp_server
 ```
 
-**macOS:**
+### macOS / Linux
+
 ```bash
-brew install kicad
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev]'
+python -m kicad_mcp_server
 ```
 
-**Windows:**
-Download from [KiCad website](https://www.kicad.org/download/)
-
-## Installation Methods
-
-### Method 1: Install from PyPI (Recommended)
+The entry-point command is also available after installation:
 
 ```bash
-# Install core package
-pip install kicad-mcp-server
-
-# Or install with development dependencies
-pip install kicad-mcp-server[dev]
+kicad-mcp-server
 ```
 
-### Method 2: Install from Source
+## KiCad CLI
+
+Check that KiCad CLI is available:
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/kicad-mcp-server.git
-cd kicad-mcp-server
-
-# Install in development mode
-pip install -e .
-
-# Or with development dependencies
-pip install -e ".[dev]"
+kicad-cli version
 ```
 
-### Method 3: Install with requirements.txt
+If it is not on PATH, set `KICAD_CLI` to the full executable path.
 
-```bash
-# Install core dependencies
-pip install -r requirements.txt
+PowerShell:
 
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Install testing dependencies (optional, for hardware testing)
-pip install -r requirements-test.txt
+```powershell
+$env:KICAD_CLI = "C:\Program Files\KiCad\9.0\bin\kicad-cli.exe"
 ```
 
-## Dependency Details
-
-### Core Dependencies (requirements.txt)
-
-- **mcp[cli]>=1.2.0** - Model Context Protocol framework
-- **fastmcp>=0.1.0** - Fast MCP server implementation
-- **kicad-skip>=0.2.5** - KiCad file parsing library
-- **pydantic>=2.0.0** - Data validation and parsing
-- **python-dotenv>=1.0.0** - Environment variable management
-- **jinja2>=3.1.0** - Template engine for code generation
-
-### Development Dependencies (requirements-dev.txt)
-
-- **pytest>=7.0.0** - Testing framework
-- **pytest-asyncio>=0.21.0** - Async test support
-- **pytest-cov>=4.0.0** - Code coverage reporting
-- **black>=23.0.0** - Code formatter
-- **ruff>=0.1.0** - Fast Python linter
-- **mypy>=1.0.0** - Static type checker
-
-### Testing Dependencies (requirements-test.txt)
-
-These are optional dependencies for running hardware tests with actual hardware interaction:
-
-- **RPi.GPIO>=0.7.0** - Raspberry Pi GPIO (ARM only)
-- **smbus2>=0.4.0** - I2C communication
-- **spidev>=3.5** - SPI communication (ARM only)
-- **pyserial>=3.5** - Serial communication
-- **mock>=4.0.0** - Mocking framework
-
-## KiCad Integration
-
-### Verify KiCad Installation
+macOS example:
 
 ```bash
-# Check KiCad version
-kicad-cli --version
+export KICAD_CLI="/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli"
+```
 
-# Or check pcbnew Python module
+Linux example:
+
+```bash
+export KICAD_CLI="/usr/bin/kicad-cli"
+```
+
+The helper also searches PATH and common KiCad installation locations. Do not hard-code a path that does not match the installed KiCad version.
+
+## Full PCB API support (`pcbnew`)
+
+The companion can parse many files without importing `pcbnew`, but PCB API-backed operations need a Python interpreter that can import KiCad's own `pcbnew` module.
+
+Check the interpreter:
+
+```bash
 python -c "import pcbnew; print(pcbnew.GetBuildVersion())"
 ```
 
-### Path Configuration
+If this fails, use the Python interpreter bundled with your KiCad installation or install the package into that interpreter. Typical locations:
 
-If KiCad is not in your system PATH, you may need to add it:
+- Windows: `C:\Program Files\KiCad\<version>\bin\python.exe`
+- macOS: KiCad's bundled Python under `/Applications/KiCad/KiCad.app/Contents/Frameworks/`
+- Linux: the system Python with the KiCad `pcbnew` bindings installed by the distribution.
 
-**Linux/macOS:**
+Set `KICAD_PYTHON` to the interpreter path when the companion's automatic detection does not find it. Keep the MCP process and KiCad Python ABI compatible.
+
+## Optional project configuration
+
+Set `KICAD_PROJECT_PATHS` to a comma-separated list of permitted project directories. Other defaults are documented in `.env.example`.
+
+Example:
+
 ```bash
-# Add to ~/.bashrc or ~/.zshrc
-export PATH=$PATH:/path/to/kicad/bin
-export PYTHONPATH=$PYTHONPATH:/path/to/kicad/lib/python3.10/site-packages
+KICAD_PROJECT_PATHS=/home/user/kicad-projects
 ```
 
-**Windows:**
-```cmd
-REM Add to System Environment Variables
-set PATH=%PATH%;C:\Program Files\KiCad\bin
-set PYTHONPATH=%PYTHONPATH%;C:\Program Files\KiCad\lib\python3.10\site-packages
-```
+Use absolute paths and only expose directories that the AI client is allowed to read or modify.
 
-## Claude Desktop Configuration
+## MCP client configuration
 
-### Linux/macOS
-
-Add to `~/.config/Claude/claude_desktop_config.json`:
+The companion uses local stdio transport. Configure it as a second server alongside the primary TypeScript server. Example generic JSON entry:
 
 ```json
 {
   "mcpServers": {
-    "kicad": {
-      "type": "stdio",
-      "command": "python",
+    "kicad-analysis": {
+      "command": "/absolute/path/to/kicad-analysis-server/.venv/bin/python",
       "args": ["-m", "kicad_mcp_server"],
-      "cwd": "/path/to/kicad-mcp-server",
       "env": {
-        "PYTHONPATH": "/path/to/kicad-mcp-server/src"
+        "KICAD_CLI": "/absolute/path/to/kicad-cli",
+        "KICAD_PROJECT_PATHS": "/absolute/path/to/kicad-projects"
       }
     }
   }
 }
 ```
 
-### Windows
+On Windows, use the full path to `.venv\Scripts\python.exe`. Remove environment entries you do not need. Keep project paths and executable paths specific to your machine. The exact configuration file location depends on the MCP client.
 
-Add to `%APPDATA%\Claude\claude_desktop_config.json`:
+## Run tests
 
-```json
-{
-  "mcpServers": {
-    "kicad": {
-      "type": "stdio",
-      "command": "python",
-      "args": ["-m", "kicad_mcp_server"],
-      "cwd": "C:\\path\\to\\kicad-mcp-server",
-      "env": {
-        "PYTHONPATH": "C:\\path\\to\\kicad-mcp-server\\src"
-      }
-    }
-  }
-}
-```
-
-## Docker Installation
-
-### Using Dockerfile
-
-```dockerfile
-FROM python:3.11-slim
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    kicad \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
-WORKDIR /app
-
-# Copy project files
-COPY . /app/
-
-# Install Python dependencies
-RUN pip install -r requirements.txt
-
-# Run the server
-CMD ["python", "-m", "kicad_mcp_server"]
-```
-
-### Build and Run
+From this companion directory:
 
 ```bash
-# Build image
-docker build -t kicad-mcp-server .
-
-# Run container
-docker run -v /path/to/projects:/projects kicad-mcp-server
+python -m pip install -e '.[test]'
+python -m pytest tests/ -q
 ```
 
-## Virtual Environment (Recommended)
-
-```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Linux/macOS:
-source venv/bin/activate
-# Windows:
-venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-## Verification
-
-### Test Installation
-
-```bash
-# Test MCP server
-python -m kicad_mcp_server
-
-# Test KiCad integration
-python -c "import pcbnew; print('KiCad integration: OK')"
-
-# Run tests
-pytest tests/ -v
-```
-
-### Check Available Tools
-
-```python
-from kicad_mcp_server import server
-
-# Get MCP server
-mcp_server = server.create_server()
-
-# List available tools
-print("Available tools:")
-for tool in mcp_server._tools.values():
-    print(f"  - {tool.name}")
-```
+KiCad CLI integration tests skip when KiCad is not installed. The parser and hierarchy tests can run without a KiCad desktop session.
 
 ## Troubleshooting
 
-### Import Errors
+- **`No module named pcbnew`:** use a KiCad-compatible Python interpreter or set `KICAD_PYTHON`. Static parser and CLI-backed features may still work without pcbnew.
+- **`kicad-cli not found`:** set `KICAD_CLI` to the installed executable.
+- **MCP server exits during startup:** run `python -m kicad_mcp_server` in the same environment and inspect the import error before configuring the client.
+- **Permission denied:** grant access only to the intended project directory; avoid running the MCP server as Administrator/root.
 
-**Problem:** `ImportError: No module named 'pcbnew'`
+## Safety
 
-**Solution:**
-```bash
-# Ensure KiCad is installed and in PATH
-which kicad-cli
-
-# Check Python path
-python -c "import sys; print(sys.path)"
-
-# Reinstall with proper path
-export PYTHONPATH=$PYTHONPATH:/path/to/kicad/lib/python3.10/site-packages
-```
-
-### Permission Errors
-
-**Problem:** `Permission denied` when accessing KiCad files
-
-**Solution:**
-```bash
-# Fix file permissions
-chmod +x /path/to/kicad/bin/kicad-cli
-
-# Or use sudo (not recommended for development)
-sudo pip install -r requirements.txt
-```
-
-### Docker Issues
-
-**Problem:** `kicad-cli not found` in Docker
-
-**Solution:**
-```dockerfile
-# Install KiCad in Dockerfile
-RUN apt-get update && apt-get install -y kicad
-
-# Or mount KiCad from host
-docker run -v /usr/share/kicad:/usr/share/kicad kicad-mcp-server
-```
-
-## Updating Installation
-
-```bash
-# Update to latest version
-pip install --upgrade kicad-mcp-server
-
-# Or from source
-git pull origin main
-pip install -e .
-```
-
-## Uninstallation
-
-```bash
-# Uninstall package
-pip uninstall kicad-mcp-server
-
-# Clean up virtual environment
-deactivate
-rm -rf venv/
-```
-
-## Next Steps
-
-After installation:
-
-1. **Configure Claude Desktop** - See Configuration section above
-2. **Test basic functionality** - Try analyzing a sample schematic
-3. **Read documentation** - Check `docs/` directory for detailed guides
-4. **Run examples** - See `examples/` directory for usage examples
-
-## Support
-
-- **Documentation**: See `docs/` directory
-- **Issues**: [GitHub Issues](https://github.com/yourusername/kicad-mcp-server/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/kicad-mcp-server/discussions)
-
----
-
-**Last Updated**: 2025-01-09
-**Python Version**: 3.10+
-**KiCad Version**: 9.0+
+Always inspect generated files and run native KiCad ERC/DRC using a compatible KiCad version. Review footprints, symbol assignments, clearances, copper zones, stack-up, manufacturing outputs and electrical constraints before ordering boards. Generated firmware, device trees and tests are starting points, not hardware certification.
