@@ -26,6 +26,7 @@ __all__ = [
     "pcb",
     "pcb_layout",
     "netlist",
+    "parts_registry",
     "device_tree",
     "hierarchical_analysis",
     "pin_analysis",
