@@ -989,3 +989,10 @@ If you use this project in your research or publication, please cite:
 
 
 
+
+
+## Analysis and embedded-engineering companion
+
+This repository also includes a separately runnable Python analysis companion derived from **[Seeed Studio's original KiCad MCP Server](https://github.com/Seeed-Studio/kicad-mcp-server)**. The source was transferred through [faizannazir/kicad-mcp-server](https://github.com/faizannazir/kicad-mcp-server), which is a fork, not the original project. Credit and provenance are documented in [UPSTREAM-NOTICE.md](integrations/kicad-analysis-server/UPSTREAM-NOTICE.md).
+
+The companion adds hierarchical schematic/net analysis, MCU pin-function and conflict analysis, device-tree and embedded test generation, verified parts-registry support, PCB/schematic parsing, visualization exports, and KiCad CLI ERC/DRC report parsing. See [integration setup](integrations/README.md). It currently runs as a separate MCP process; its tools are not yet merged into the primary TypeScript tool registry.
