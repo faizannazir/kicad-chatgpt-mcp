@@ -42,12 +42,30 @@ jobs:
       - name: Run TypeScript compiler
         run: npm run build
 
-      - name: Run linter (Unix)
-        if: runner.os != 'Windows'
-        run: npm run lint
+      - name: Run TypeScript lint
+        run: npm run lint:ts
 
       - name: Run tests
         run: npm test || echo "Tests not configured yet"
+
+  # Python style checks are intentionally separate from mypy. The imported
+  # companion and legacy Python bridge still contain untyped KiCad/SWIG APIs.
+  python-style:
+    name: Python Style (Ubuntu)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install style tools
+        run: python -m pip install black flake8
+      - name: Check formatting
+        run: black --check python/
+      - name: Check lint
+        run: flake8 python/ --select=E,F,W --extend-ignore=E501
 
   # Python tests
   python-tests:
