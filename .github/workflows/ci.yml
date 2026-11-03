@@ -29,6 +29,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # npm run lint also invokes Black, MyPy and Flake8 for python/.
+      # Install Python and those tools on every OS in this matrix (including Windows).
+      - name: Setup Python for lint
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python lint tools
+        run: python -m pip install --upgrade black mypy flake8
+
       - name: Run TypeScript compiler
         run: npm run build
 
