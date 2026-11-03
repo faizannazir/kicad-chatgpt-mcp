@@ -1,7 +1,7 @@
 
 # KiCAD MCP Server
 
-A Model Context Protocol (MCP) server that enables AI assistants like Claude to interact with KiCAD for PCB design automation. Built on the MCP 2025-06-18 specification, this server provides comprehensive tool schemas and real-time project state access for intelligent PCB design workflows.
+A Model Context Protocol (MCP) server that enables compatible AI clients to interact with KiCad for PCB design automation. ChatGPT compatibility depends on the client's MCP connector and transport support; this repository alone does not make every local stdio server remotely accessible to ChatGPT. Built on the MCP 2025-06-18 specification, this server provides comprehensive tool schemas and real-time project state access for intelligent PCB design workflows.
 
 ## Overview
 
