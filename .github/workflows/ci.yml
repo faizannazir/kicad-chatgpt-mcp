@@ -42,7 +42,7 @@ jobs:
           python -m pip install pytest pytest-cov
           python -m pip install -r python/requirements.txt
       - name: Run Python tests
-        run: python -m pytest --import-mode=importlib tests/ python/tests/ python/test_ipc_backend.py -q
+        run: python -m pytest --import-mode=importlib tests/ python/tests/ -q
 
   python-lint:
     name: Python lint (changed files)
