@@ -74,7 +74,13 @@ jobs:
           if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
             BASE_SHA="$(git rev-parse HEAD^)"
           fi
-          mapfile -t files < <(git diff --name-only "$BASE_SHA" HEAD -- python/ | grep -E '\\.py
+          files="$(git diff --name-only "$BASE_SHA" HEAD -- python/ | grep -E '\.py$' || true)"
+          if [ -z "$files" ]; then
+            echo "No Python files changed; skipping legacy Python formatting checks."
+            exit 0
+          fi
+          echo "$files" | xargs black --check
+          echo "$files" | xargs flake8 --select=E,F,W --extend-ignore=E501
 
   # Python tests
   python-tests:
