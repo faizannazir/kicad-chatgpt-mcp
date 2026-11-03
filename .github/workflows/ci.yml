@@ -42,8 +42,9 @@ jobs:
       - name: Run TypeScript compiler
         run: npm run build
 
-      - name: Run linter
-        run: npm run lint || echo "Linter not configured yet"
+      - name: Run linter (Unix)
+        if: runner.os != 'Windows'
+        run: npm run lint
 
       - name: Run tests
         run: npm test || echo "Tests not configured yet"
